@@ -10,4 +10,6 @@ try:
 except IOError:
     pass
 
-from main import wsgi_app as application
+
+# hooked by OpenShift
+from main import application

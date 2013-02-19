@@ -25,7 +25,7 @@ def index(query=''):
     return template('index.html', query=query.decode('utf8', 'replace'), req=request.query)
 
 
-wsgi_app=default_app()
+application=default_app()
 if '__main__' == __name__:
     try:
         import readline, rlcompleter; readline.parse_and_bind("tab: complete")
@@ -44,5 +44,5 @@ if '__main__' == __name__:
     __import__('BaseHTTPServer').BaseHTTPRequestHandler.address_string = lambda x:x.client_address[0]
     from django.utils import autoreload
     def dev_server():
-        run(wsgi_app, host='0.0.0.0', port=8002, debug=True)
+        run(default_app(), host='0.0.0.0', port=8002, debug=True)
     autoreload.main(dev_server)
