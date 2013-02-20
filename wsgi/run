@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+# coding: utf8 
+
+__doc__ = """
+this file is for running wsgi on VPS, not RedHat OpenShift
+"""
+
+import bjoern
+from main import application
+
+bjoern.run(application, '127.0.0.1', 8950)

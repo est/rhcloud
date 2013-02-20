@@ -50,6 +50,22 @@ def show_ip():
 def show_ua():
     return request.environ.get('HTTP_USER_AGENT', '')
 
+@tools_app.route('/uid')
+def show_uid():
+    return 'uid inter lookup tool.'
+
+@tools_app.route('/echo')
+def show_h():
+    response.content_type = 'text/plain'
+    return pformat(request.environ)
+
+
+@tools_app.route('/h')
+def show_h():
+    response.content_type = 'text/plain'
+    return '\r\n'.join(['%s:\t%s' % (k, v) for k, v in request.environ.iteritems() if k.lower().startswith('http_')])
+    
+
 
 # @ToDo: rewrire http://bottlepy.org/docs/dev/_modules/bottle.html
 # http://bottlepy.org/docs/dev/api.html
