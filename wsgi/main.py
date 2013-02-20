@@ -25,7 +25,7 @@ def server_static(filename):
     return static_file(filename, root='static')
 
 dict_app = Bottle()
-dict_app.hostnames = ['def.est.im',]
+dict_app.hostnames = ['def.est.im', '*.def.est.im']
 
 @route('/name/<name>')
 def nameindex(name='Stranger'):
@@ -40,7 +40,7 @@ def index(query=''):
     return template('index.html', query=query.decode('utf8', 'replace'), req=request.query)
 
 tools_app = Bottle()
-tools_app.hostnames = ['t.est.im']
+tools_app.hostnames = ['t.est.im', '*.t.est.im']
 
 @tools_app.route('/ip')
 def show_ip():
