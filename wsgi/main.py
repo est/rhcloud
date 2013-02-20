@@ -73,8 +73,7 @@ def show_h():
 def application(environ, start_response):
     # how to propagate static resources
     default_app().mount('/static', static_app)
-
-    hostname = environ.get('HTTP_HOST', '')
+    hostname = environ.get('HTTP_HOST', '').lower()
     all_apps = [tools_app, dict_app]+default_app
     for app in all_apps:
         """
