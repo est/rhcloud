@@ -11,8 +11,10 @@ from bottle import (route, run, default_app,
     Bottle, static_file, 
     jinja2_template as template, html_escape)
 
-bottle.TEMPLATE_PATH.append('./templates')
-# [os.path.join(os.path.realpath(os.path.dirname(__file__)), 'templates') ]
+rel_path = lambda x: os.path.join(os.path.realpath(os.path.dirname(__file__)), x)
+
+bottle.TEMPLATE_PATH.append(rel_path('templates'))
+
 
 static_app = Bottle()
 SITE_STATIC_FILES = '|'.join(map(re.escape, [
