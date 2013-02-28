@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf8
 
-import time, re, sys, os, os.path, glob
+import datetime, time, re, sys, os, os.path, glob
 from pprint import pprint, pformat
 from urllib import quote
 from fnmatch import fnmatch
@@ -40,6 +40,36 @@ def index(query=''):
     if q:
         return redirect('/%s' % quote(q), code=301)
     return template('index.html', query=query.decode('utf8', 'replace'), req=request.query)
+
+@dict_app.route('/robots.txt')
+def robots():
+    response.content_type = 'text/plain'
+    return """
+Sitemap: http://%s/sitemap.xml
+
+User-agent: *
+Disallow: /:status
+""".strip() % 'def.est.im'
+
+@dict_app.route('/sitemap.xml')
+def sitemap():
+    response.content_type = 'text/xml'
+    recent_words_xml = '\n'.join([
+        ('  <url><loc>http://def.est.im/%s</loc>'
+        '<changefreq>monthly</changefreq>'
+        '<lastmod>%s</lastmod></url>') % (x, y) for x, y in [
+            ('hello', '2013-02-28'),
+            ('world', '2013-02-28'),
+        ]
+    ])
+    return """
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>http://def.est.im/</loc><changefreq>hourly</changefreq><lastmod>%s</lastmod></url>
+%s
+</urlset>
+""".strip() % (datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:01:01Z'), recent_words_xml,)
+# datetime.date.today().isoformat()
 
 tools_app = Bottle()
 tools_app.hostnames = ['t.est.im', '*.t.est.im']
@@ -96,7 +126,7 @@ if '__main__' == __name__:
     except:
         pass
 
-    DEV_APP = tools_app # dict_app
+    DEV_APP = dict_app # dict_app
     if getattr(DEV_APP, 'hostnames', None):
         DEV_APP.hostnames.append('10.0.18.3:8002')
     else:
