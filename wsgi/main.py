@@ -49,7 +49,7 @@ Sitemap: http://%s/sitemap.xml
 
 User-agent: *
 Disallow: /:status
-""".strip() % 'def.est.im'
+""".strip() % dict_app.hostnames[0]
 
 @dict_app.route('/sitemap.xml')
 def sitemap():
@@ -74,29 +74,50 @@ def sitemap():
 tools_app = Bottle()
 tools_app.hostnames = ['t.est.im', '*.t.est.im']
 
-@tools_app.route('/ip')
-def show_ip():
+
+@tools_app.route('/ip<ext:re:\.?\w*>')
+def ip(ext):
+    "Client IP address"
     return request.environ.get('REMOTE_ADDR', '')
 
-@tools_app.route('/ua')
-def show_ua():
+@tools_app.route('/ua<ext:re:\.?\w*>')
+def user_agent(ext):
+    "Client User-agent"
     return request.environ.get('HTTP_USER_AGENT', '')
 
-@tools_app.route('/uid')
-def show_uid():
+@tools_app.route('/uid<ext:re:\.?\w*>', group='test')
+def uid_tool(ext):
     return 'uid inter lookup tool.'
 
-@tools_app.route('/echo')
-def show_h():
+@tools_app.route('/echo<ext:re:\.?\w*>')
+def echo_headers(ext):
     response.content_type = 'text/plain'
     return pformat(request.environ)
 
 
-@tools_app.route('/h')
-def show_h():
+@tools_app.route('/h<ext:re:\.?\w*>')
+def http_headers(ext):
     response.content_type = 'text/plain'
     return '\r\n'.join(['%s:\t%s' % (k, v) for k, v in request.environ.iteritems() if k.lower().startswith('http_')])
-    
+
+@tools_app.route('/robots.txt')
+def robots():
+    response.content_type = 'text/plain'
+    return """
+User-agent: *
+Disallow: /:status
+
+Sitemap: http://%s/sitemap.xml
+""".strip() % tools_app.hostnames[0] 
+
+@tools_app.route('/')
+def index():
+    tools = [{
+        'path': tools_app.router.build(x.rule, ext=''), 
+        'name': x.callback.__name__.replace('_', ' '), 
+        'desc': x.callback.__doc__ or ''} for x in tools_app.routes 
+        if x.rule.endswith('<ext:re:\.?\w*>')]
+    return template('tools_app_index.html', tools=tools)
 
 
 # @ToDo: rewrire http://bottlepy.org/docs/dev/_modules/bottle.html
@@ -126,7 +147,7 @@ if '__main__' == __name__:
     except:
         pass
 
-    DEV_APP = dict_app # dict_app
+    DEV_APP = tools_app # dict_app
     if getattr(DEV_APP, 'hostnames', None):
         DEV_APP.hostnames.append('10.0.18.3:8002')
     else:
