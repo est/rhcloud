@@ -49,3 +49,8 @@ curl --header "Content-type: application/json" -d '[{"jsonrpc":"2.0","id":"gapiR
 
 
 https://developer.chrome.com/trunk/apps/cloudMessaging.html
+
+
+
+Redhat Openshift open ports
+https://openshift.redhat.com/community/kb/kb-e1038-i-cant-bind-to-a-port
