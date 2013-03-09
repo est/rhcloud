@@ -49,15 +49,21 @@
     <script language="javascript"><!--
       var query = "{{ query }}";
       var url = "//www.google.com/dictionary/json?callback=showGDict&sl=zh&tl=en&restrict=pr,sy,de&q=";
+      var ck;
+      var ct;
+      
 
       $(function(){
         $('#keyword').focus();
       })
 
       function instaLookup(elem){
-        $.getScript(url + elem.value, function(){
-          console.info('wat')
-        })
+        if(elem.value!=ck){
+          clearTimeout(ct);
+        }
+        ct = setTimeout(function(){
+            $.getScript(url + elem.value)
+          }, 300)
       }
 
       function list2obj(list, keyFunc){
