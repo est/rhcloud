@@ -147,11 +147,11 @@ if '__main__' == __name__:
     except:
         pass
 
-    DEV_APP = tools_app # dict_app
+    DEV_APP = dict_app # dict_app
     if getattr(DEV_APP, 'hostnames', None):
-        DEV_APP.hostnames.append('10.0.18.3:8002')
+        DEV_APP.hostnames.extend(['10.*', '127.*', '192.*'])
     else:
-        DEV_APP.hostnames = ['10.0.18.3:8002']
+        DEV_APP.hostnames = ['10.*', '127.*', '192.*']
     DEV_APP.mount('/static', static_app)
 
     __import__('BaseHTTPServer').BaseHTTPRequestHandler.address_string = lambda x:x.client_address[0]

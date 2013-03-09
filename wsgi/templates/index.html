@@ -48,14 +48,17 @@
     <script src="/static/js/bootstrap.min.js"></script>
     <script language="javascript"><!--
       var query = "{{ query }}";
-      var url = "";
+      var url = "//www.google.com/dictionary/json?callback=showGDict&sl=zh&tl=en&restrict=pr,sy,de&q=";
 
       $(function(){
         $('#keyword').focus();
       })
 
       function instaLookup(elem){
-        console.info(this)
+        var GDictSrc = document.getElementById('GDictSrc');
+        document.body.removeChild(GDictSrc);
+        GDictSrc.src = url+elem.value
+        document.body.appendChild(GDictSrc);
       }
 
       function list2obj(list, keyFunc){
@@ -229,7 +232,7 @@
       }
     --></script>
     {% if query %}
-    <script id="" src="//www.google.com/dictionary/json?callback=showGDict&sl=zh&tl=en&restrict=pr,sy,de&q={{query}}"></script>
+    <script id="GDictSrc" src="//www.google.com/dictionary/json?callback=showGDict&sl=zh&tl=en&restrict=pr,sy,de&q={{query}}"></script>
     {% endif %}
   </body>
 </html>
