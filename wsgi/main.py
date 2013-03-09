@@ -51,6 +51,11 @@ User-agent: *
 Disallow: /:status
 """.strip() % dict_app.hostnames[0]
 
+@dict_app.route('/alert.js')
+def alert():
+    response.content_type='application/javascript'
+    return 'alert(0)';
+
 @dict_app.route('/sitemap.xml')
 def sitemap():
     response.content_type = 'text/xml'

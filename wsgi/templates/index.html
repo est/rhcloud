@@ -55,10 +55,9 @@
       })
 
       function instaLookup(elem){
-        var GDictSrc = document.getElementById('GDictSrc');
-        document.body.removeChild(GDictSrc);
-        GDictSrc.src = url+elem.value
-        document.body.appendChild(GDictSrc);
+        $.getScript(url + elem.value, function(){
+          console.info('wat')
+        })
       }
 
       function list2obj(list, keyFunc){
@@ -166,6 +165,8 @@
           // lastQuery = data;  global var
           {% if req.json %} $('#content pre code').text(JSON.stringify(data, null, 4));{% endif %}
           var entryOrder=['spellings', 'primaries', 'monoPrimaries', 'synonyms', 'relatedPhrases', 'webTranslations', 'examples', 'webDefinitions', 'images']
+
+          $('#gdictContent').text('')
 
           $.each(entryOrder, function(i){
             if( data[this] ){
