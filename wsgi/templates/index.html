@@ -19,7 +19,7 @@
         <div id="pageTitle" class="page-header"><h1>def:</h1></div>
         <form class="form-search" action="/">
           <div class="input-append">
-            <input name="q" type="text" class="search-query span4" placeholder="Search" x-webkit-speech value="{{ query }}" />
+            <input id="keyword" onkeydown="instaLookup(this)" onfocus="this.value = this.value;"  name="q" type="text" class="search-query span4" placeholder="Search" x-webkit-speech value="{{ query }}" />
             <button class="btn" type="submit"><span class="icon-search"></span></button>
           </div>
         </form>
@@ -49,6 +49,14 @@
     <script language="javascript"><!--
       var query = "{{ query }}";
       var url = "";
+
+      $(function(){
+        $('#keyword').focus();
+      })
+
+      function instaLookup(elem){
+        console.info(this)
+      }
 
       function list2obj(list, keyFunc){
         var rtn = {}
@@ -80,8 +88,12 @@
           snd.setAttribute('src', url)
           document.body.appendChild(snd)
         } else {
-          var snd = document.createElement('audio');
-          snd.src = url;
+          var snd = document.getElementById('soundOutput')
+          if(!snd) {
+            snd = document.createElement('audio');
+            snd.src = url;
+            snd.id = 'soundOutput'
+          }
           snd.play()
         }
       }
@@ -217,7 +229,7 @@
       }
     --></script>
     {% if query %}
-    <script src="//www.google.com/dictionary/json?callback=showGDict&sl=zh&tl=en&restrict=pr,sy,de&q={{query}}"></script>
+    <script id="" src="//www.google.com/dictionary/json?callback=showGDict&sl=zh&tl=en&restrict=pr,sy,de&q={{query}}"></script>
     {% endif %}
   </body>
 </html>
