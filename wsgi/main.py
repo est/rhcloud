@@ -5,6 +5,7 @@ import datetime, time, re, sys, os, os.path, glob
 from pprint import pprint, pformat
 from urllib import quote
 from fnmatch import fnmatch
+import peewee
 import bottle
 from bottle import (route, run, default_app, 
     request, response, redirect,
@@ -15,6 +16,19 @@ rel_path = lambda x: os.path.join(os.path.realpath(os.path.dirname(__file__)), x
 
 bottle.TEMPLATE_PATH.append(rel_path('templates'))
 
+db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
+
+def remote_addr(req):
+    proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', [])]
+    ip = req.environ.get('REMOTE_ADDR', '').strip().lower()
+    if ip == req.environ.get('OPENSHIFT_INTERNAL_IP', '').strip().lower():
+        return proxy[0]
+    else:
+        return ip
+    
+
+
+# static app for devel
 
 static_app = Bottle()
 SITE_STATIC_FILES = '|'.join(map(re.escape, [
@@ -26,12 +40,26 @@ SITE_STATIC_FILES = '|'.join(map(re.escape, [
 def server_static(filename):
     return static_file(filename, root='static')
 
-dict_app = Bottle()
-dict_app.hostnames = ['def.est.im', '*.def.est.im']
+# default app
 
 @route('/name/<name>')
 def nameindex(name='Stranger'):
     return '<strong>Hello, %s!</strong>' % name
+
+# dict app
+
+dict_app = Bottle()
+dict_app.hostnames = ['def.est.im', '*.def.est.im']
+
+class DictRecords(peewee.Model):
+    user_id = peewee.IntegerField()
+    client_ip = peewee.CharField(max_length=40)
+    user_agent = peewee.CharField(max_length=128)
+    word = peewee.CharField(max_length=32)
+    date = peewee.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+
+    class Meta:
+        database = db
 
 @dict_app.route('/')
 @dict_app.route('/<query>')
@@ -39,6 +67,7 @@ def index(query=''):
     q = request.query.get('q', '')
     if q:
         return redirect('/%s' % quote(q), code=301)
+    DictRecords.create(client_ip)
     return template('index.html', query=query.decode('utf8', 'replace'), req=request.query)
 
 @dict_app.route('/robots.txt')
@@ -83,7 +112,7 @@ tools_app.hostnames = ['t.est.im', '*.t.est.im']
 @tools_app.route('/ip<ext:re:\.?\w*>')
 def ip(ext):
     "Client IP address"
-    return request.environ.get('REMOTE_ADDR', '')
+    return remote_addr(request)
 
 @tools_app.route('/ua<ext:re:\.?\w*>')
 def user_agent(ext):
@@ -152,7 +181,7 @@ if '__main__' == __name__:
     except:
         pass
 
-    DEV_APP = dict_app # dict_app
+    DEV_APP = tools_app # dict_app
     if getattr(DEV_APP, 'hostnames', None):
         DEV_APP.hostnames.extend(['10.*', '127.*', '192.*'])
     else:
