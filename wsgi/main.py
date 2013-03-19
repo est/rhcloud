@@ -21,7 +21,8 @@ db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
 def remote_addr(req):
     proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', [])]
     ip = req.environ.get('REMOTE_ADDR', '').strip().lower()
-    if ip == req.environ.get('OPENSHIFT_INTERNAL_IP', '').strip().lower():
+    # check out OPENSHIFT_INTERNAL_IP
+    if ip == req.environ.get('SERVER_ADDR', '').strip().lower():
         return proxy[0]
     else:
         return ip
