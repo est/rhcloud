@@ -63,6 +63,7 @@
         }
         ct = setTimeout(function(){
             $.getScript(url + elem.value)
+            query = elem.value;
           }, 300)
       }
 
@@ -234,7 +235,7 @@
               }
             }
           })
-
+        window.history.pushState(null, 'def: '+query, '/'+query)
         }
       }
     --></script>
