@@ -17,7 +17,13 @@ rel_path = lambda x: os.path.join(os.path.realpath(os.path.dirname(__file__)), x
 bottle.TEMPLATE_PATH.append(rel_path('templates'))
 STATIC_ROOT = rel_path('static')
 
-db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
+# db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
+db = peewee.MySQLDatabase('backend', 
+    host=os.environ.get('OPENSHIFT_MYSQL_DB_HOST', '127.0.0.1'), 
+    port=int(os.environ.get('OPENSHIFT_MYSQL_DB_PORT', '3306')),
+    user='bu',
+    passwd='bupassword@',
+    )
 
 def remote_addr(req):
     proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')]

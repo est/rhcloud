@@ -6,5 +6,5 @@ setup(name='est projects',
       author='est',
       author_email='electronicstar@126.com',
       url='http://www.python.org/sigs/distutils-sig/',
-      install_requires=['bottle', 'flask', 'peewee'],
+      install_requires=['bottle', 'flask', 'peewee', 'mysql-python'],
      )
