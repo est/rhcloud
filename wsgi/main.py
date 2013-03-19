@@ -15,6 +15,7 @@ from bottle import (route, run, default_app,
 rel_path = lambda x: os.path.join(os.path.realpath(os.path.dirname(__file__)), x)
 
 bottle.TEMPLATE_PATH.append(rel_path('templates'))
+STATIC_ROOT = rel_path('static')
 
 db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
 
@@ -27,19 +28,23 @@ def remote_addr(req):
     else:
         return ip
     
+def is_crawler(req):
+    ua = req.environ.get('HTTP_USER_AGENT', '')
+    ua_l = ua.lower()
+    if 'spider' in ua_l or 'bot' in ua_l and not re.search(r'Mozilla[ \/]\d\.\d\W', ua):
+        return True
+    else:
+        return False
 
 
 # static app for devel
 
 static_app = Bottle()
-SITE_STATIC_FILES = '|'.join(map(re.escape, [
-    'favicon.ico',
-    'robots.txt'
-]))
+
 @static_app.route('/<filename:path>')
 #@static_app.route('/<filename:re:.*(%s)' % SITE_STATIC_FILES)
 def server_static(filename):
-    return static_file(filename, root='static')
+    return static_file(filename, root=STATIC_ROOT)
 
 # default app
 
@@ -53,14 +58,20 @@ dict_app = Bottle()
 dict_app.hostnames = ['def.est.im', '*.def.est.im']
 
 class DictRecords(peewee.Model):
-    user_id = peewee.IntegerField()
+    user_id = peewee.IntegerField(null=True)
     client_ip = peewee.CharField(max_length=40)
     user_agent = peewee.CharField(max_length=128)
     word = peewee.CharField(max_length=32)
-    date = peewee.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+    date = peewee.DateTimeField(formats=['%Y-%m-%d %H:%M:%S'], index=True)
 
     class Meta:
         database = db
+
+@dict_app.route(r'/\:history')
+def history():
+    response.content_type = 'text/plain'
+    sq = DictRecords.select(DictRecords.date, DictRecords.word)
+    return '\n'.join([ '%s, %s' % (x.date, x.word) for x in sq])
 
 @dict_app.route('/')
 @dict_app.route('/<query>')
@@ -68,8 +79,15 @@ def index(query=''):
     q = request.query.get('q', '')
     if q:
         return redirect('/%s' % quote(q), code=301)
-    DictRecords.create(client_ip)
-    return template('index.html', query=query.decode('utf8', 'replace'), req=request.query)
+    q = query.decode('utf8', 'replace')
+    if not is_crawler(request):
+        DictRecords.create(
+            client_ip=remote_addr(request), 
+            user_agent=request.environ.get('HTTP_USER_AGENT', ''),
+            word=q,
+            date = datetime.datetime.utcnow()
+        )
+    return template('index.html', query=q, req=request.query)
 
 @dict_app.route('/robots.txt')
 def robots():
@@ -89,13 +107,14 @@ def alert():
 @dict_app.route('/sitemap.xml')
 def sitemap():
     response.content_type = 'text/xml'
+    recent_words = [
+        ('hello', '2013-02-28'),
+        ('world', '2013-02-28'),
+    ]
     recent_words_xml = '\n'.join([
         ('  <url><loc>http://def.est.im/%s</loc>'
         '<changefreq>monthly</changefreq>'
-        '<lastmod>%s</lastmod></url>') % (x, y) for x, y in [
-            ('hello', '2013-02-28'),
-            ('world', '2013-02-28'),
-        ]
+        '<lastmod>%s</lastmod></url>') % (x, y) for x, y in recent_words
     ])
     return """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -163,7 +182,17 @@ def index():
 
 def application(environ, start_response):
     # how to propagate static resources
-    default_app().mount('/static', static_app)
+    # default_app().mount('/static', static_app)
+
+
+    p = environ.get('PATH_INFO', '')
+    f = os.path.join(STATIC_ROOT, 'root') + p
+    if '.' in p and '..' not in p and '/' not in p[1:] and \
+        os.path.isfile(f):
+        environ['PATH_INFO'] = '/root' + p
+        return static_app(environ, start_response)
+
+
     hostname = environ.get('HTTP_HOST', '').lower()
     all_apps = [tools_app, dict_app]+default_app
     for app in all_apps:
@@ -185,12 +214,14 @@ if '__main__' == __name__:
     except:
         pass
 
-    DEV_APP = tools_app # dict_app
+    DEV_APP = dict_app # dict_app
+
+    local_ip = ['10.*', '127.*', '192.*']
     if getattr(DEV_APP, 'hostnames', None):
-        DEV_APP.hostnames.extend(['10.*', '127.*', '192.*'])
+        DEV_APP.hostnames.extend(local_ip)
     else:
-        DEV_APP.hostnames = ['10.*', '127.*', '192.*']
-    DEV_APP.mount('/static', static_app)
+        DEV_APP.hostnames = local_ip
+    DEV_APP.mount('/static/', static_app)
 
     __import__('BaseHTTPServer').BaseHTTPRequestHandler.address_string = lambda x:x.client_address[0]
     from django.utils import autoreload
