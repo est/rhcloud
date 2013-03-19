@@ -19,7 +19,7 @@ bottle.TEMPLATE_PATH.append(rel_path('templates'))
 db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
 
 def remote_addr(req):
-    proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', [])]
+    proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')]
     ip = req.environ.get('REMOTE_ADDR', '').strip().lower()
     # check out OPENSHIFT_INTERNAL_IP
     if ip == req.environ.get('SERVER_ADDR', '').strip().lower():
