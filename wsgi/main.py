@@ -133,7 +133,10 @@ def echo_headers(ext):
 @tools_app.route('/h<ext:re:\.?\w*>')
 def http_headers(ext):
     response.content_type = 'text/plain'
-    return '\r\n'.join(['%s:\t%s' % (k, v) for k, v in request.environ.iteritems() if k.lower().startswith('http_')])
+    return '\n'.join([
+        '%s:\t%s' % ('-'.join(map(str.title, k[5:].split('_'))) , v) for k, v in request.environ.iteritems()
+        if k.lower().startswith('http_')
+    ])
 
 @tools_app.route('/robots.txt')
 def robots():
