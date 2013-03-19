@@ -54,3 +54,6 @@ https://developer.chrome.com/trunk/apps/cloudMessaging.html
 
 Redhat Openshift open ports
 https://openshift.redhat.com/community/kb/kb-e1038-i-cant-bind-to-a-port
+
+python -c "print '\n'.join(open('/proc/28592/environ').read().split('\0'))"
+tail -f ~/python-2.6/logs/error_log-20130319-000000-EST 
