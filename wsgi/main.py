@@ -25,6 +25,13 @@ db = peewee.MySQLDatabase('backend',
     passwd='bupassword@',
     )
 
+def retry_conn(connection, cursor, errorclass, errorvalue):
+    global db
+    if isintance(errorclass, db.get_conn().OperationalError) and errorvalue==2006:
+        db.connect()
+
+db.get_conn().errorhandler = retry_conn
+
 def remote_addr(req):
     proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')]
     ip = req.environ.get('REMOTE_ADDR', '').strip().lower()
