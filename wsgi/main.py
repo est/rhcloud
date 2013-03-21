@@ -25,7 +25,8 @@ db = peewee.MySQLDatabase('backend',
     passwd='bupassword@',
     )
 
-def retry_conn(connection, cursor, errorclass, errorvalue):
+# handle connect timeout issues
+def retry_conn(connection, errorclass, errorvalue):
     global db
     if isintance(errorclass, db.get_conn().OperationalError) and errorvalue==2006:
         db.connect()
@@ -142,10 +143,27 @@ tools_app = Bottle()
 tools_app.hostnames = ['t.est.im', '*.t.est.im']
 
 
+class RequestRecord(peewee.Model):
+    user_id = peewee.IntegerField(null=True)
+    client_ip = peewee.CharField(max_length=80)
+    user_agent = peewee.CharField(max_length=140)
+    referer = peewee.CharField(max_length=256)
+    item = peewee.CharField(max_length=32)
+    date = peewee.DateTimeField(formats=['%Y-%m-%d %H:%M:%S'], index=True)
+
+    class Meta:
+        database = db
+
+
 @tools_app.route('/ip<ext:re:\.?\w*>')
 def ip(ext):
     "Client IP address"
     return remote_addr(request)
+
+@tools_app.route('/ip/history')
+def ip_history():
+    response.content_type = 'text/plain'
+    return ''
 
 @tools_app.route('/ua<ext:re:\.?\w*>')
 def user_agent(ext):

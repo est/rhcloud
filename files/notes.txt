@@ -57,3 +57,16 @@ https://openshift.redhat.com/community/kb/kb-e1038-i-cant-bind-to-a-port
 
 python -c "print '\n'.join(open('/proc/28592/environ').read().split('\0'))"
 tail -f ~/python-2.6/logs/error_log-20130319-000000-EST 
+
+
+
+https://clients5.google.com/dictionary/json?callback=dict_api.callbacks.id110&q=mar&sl=zh-CN&tl=zh-CN&restrict=pr%2Cde&client=dict-chrome-ex
+
+https://www.google.com/search?source=dict-chrome-ex&defl=zh-CN&hl=zh-CN&q=%E6%97%A5%E6%9C%9F&tbo=1&tbs=dfn:1
+https://www.google.com/search?source=dict-chrome-ex&defl=cn&hl=en&q=begin&tbo=1&tbs=dfn:1
+//www.google.com/dictionary/json?callback=showGDict&sl=zh&tl=en&restrict=pr,sy,de&q=
+https://www.google.com/dictionary/js/dictionary_api_compiled.js
+https://www.google.com/dictionary/js/api_loader.js
+
+
+http://developer.wordnik.com
