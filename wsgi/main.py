@@ -28,8 +28,13 @@ db = peewee.MySQLDatabase('backend',
 # handle connect timeout issues
 # poor-man's connection pool
 def retry_conn(self, errorclass, errorvalue):
-    global db
-    if isinstance(errorvalue, self.connection.OperationalError):# and errorvalue[0]==2006:
+    if isinstance(errorvalue, self.connection.OperationalError): 
+        # and errorvalue[0]==2006:
+        # exc, value, tb = sys.exc_info()
+        # while tb.tb_next:
+        #     tb = tb.tb_next
+        #     # print tb.tb_frame.f_locals.keys()
+        # frame = tb.tb_frame
         print 're-conn', db.connect()
     else:
         print errorclass, errorvalue, type(errorvalue), self.connection.OperationalError
