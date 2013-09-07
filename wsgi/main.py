@@ -108,18 +108,20 @@ def index(query=''):
     import socket, pdb, os.path
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    s.connect('/var/lib/openshift/5146b48c4382ec6a30000098/app-root/runtime/data/pdb.sock')
-    print os.path.abspath('pdb.sock')
-    f = s.makefile()
-    pdb.Pdb(stdin=f, stdout=f).set_trace()
 
-    if not is_crawler(request):
-        DictRecords.create(
-            client_ip=remote_addr(request), 
-            user_agent=request.environ.get('HTTP_USER_AGENT', ''),
-            word=q,
-            date = datetime.datetime.utcnow()
-        )
+    try:
+        if not is_crawler(request):
+            DictRecords.create(
+                client_ip=remote_addr(request), 
+                user_agent=request.environ.get('HTTP_USER_AGENT', ''),
+                word=q,
+                date = datetime.datetime.utcnow()
+            )
+    except:
+        s.connect('/var/lib/openshift/5146b48c4382ec6a30000098/app-root/runtime/data/pdb.sock')
+        print os.path.abspath('pdb.sock')
+        f = s.makefile()
+        pdb.Pdb(stdin=f, stdout=f).set_trace()
     return template('index.html', query=q, req=request.query)
 
 @dict_app.route('/robots.txt')
