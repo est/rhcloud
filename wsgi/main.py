@@ -108,7 +108,7 @@ def index(query=''):
     import socket, pdb, os.path
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    s.connect('pdb.sock')
+    s.connect('/var/lib/openshift/5146b48c4382ec6a30000098/app-root/runtime/data/pdb.sock')
     print os.path.abspath('pdb.sock')
     f = s.makefile()
     pdb.Pdb(stdin=f, stdout=f).set_trace()
