@@ -105,10 +105,11 @@ def index(query=''):
     q = query.decode('utf8', 'replace')
 
     # fix connection
-    import socket, pdb
+    import socket, pdb, os.path
 
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.connect('pdb.sock')
+    print os.path.abspath('pdb.sock')
     f = s.makefile()
     pdb.Pdb(stdin=f, stdout=f).set_trace()
 
