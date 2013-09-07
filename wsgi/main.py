@@ -103,6 +103,15 @@ def index(query=''):
     if q:
         return redirect('/%s' % quote(q), code=301)
     q = query.decode('utf8', 'replace')
+
+    # fix connection
+    import socket, pdb
+
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.connect('pdb.sock')
+    f = s.makefile()
+    pdb.Pdb(stdin=f, stdout=f).set_trace()
+
     if not is_crawler(request):
         DictRecords.create(
             client_ip=remote_addr(request), 
@@ -215,6 +224,14 @@ def index():
         'desc': x.callback.__doc__ or ''} for x in tools_app.routes 
         if x.rule.endswith('<ext:re:\.?\w*>')]
     return template('tools_app_index.html', tools=tools)
+
+
+
+# fix db conn timeout issue
+# mysql> SET SESSION wait_timeout = 60;
+# mysql> SHOW VARIABLES LIKE 'wait_timeout';
+
+
 
 
 # @ToDo: rewrire http://bottlepy.org/docs/dev/_modules/bottle.html
