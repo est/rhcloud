@@ -70,3 +70,7 @@ https://www.google.com/dictionary/js/api_loader.js
 
 
 http://developer.wordnik.com
+
+
+
+rhc  cartridge start   mysql --app backend
