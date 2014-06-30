@@ -5,6 +5,9 @@ import datetime, time, re, sys, os, os.path, glob
 from pprint import pprint, pformat
 from urllib import quote
 from fnmatch import fnmatch
+
+import pystardict
+
 import peewee
 import bottle
 from bottle import (route, run, default_app, 
@@ -16,6 +19,8 @@ rel_path = lambda x: os.path.join(os.path.realpath(os.path.dirname(__file__)), x
 
 bottle.TEMPLATE_PATH.append(rel_path('templates'))
 STATIC_ROOT = rel_path('static')
+
+dictionary = pystardict.Dictionary(rel_path('def/stardict-dictd-web1913-2.4.2/dictd_www.dict.org_web1913'))
 
 db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
 # db = peewee.MySQLDatabase('backend', 
@@ -40,7 +45,7 @@ def retry_conn(self, errorclass, errorvalue):
         print errorclass, errorvalue, type(errorvalue), self.connection.OperationalError
 
 
-db.get_conn().errorhandler = retry_conn
+# db.get_conn().errorhandler = retry_conn
 
 def remote_addr(req):
     proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')]
@@ -104,11 +109,12 @@ def index(query=''):
         return redirect('/%s' % quote(q), code=301)
     q = query.decode('utf8', 'replace')
 
-    # fix connection
-    import socket, pdb, os.path
-
-    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-
+    try:
+        ans = dictionary.dict[q.title()]
+    except KeyError:
+        response.status = 404
+        return template('index.html', query=q, req=request.query)
+        
     # try:
     if not is_crawler(request):
         DictRecords.create(
@@ -122,7 +128,7 @@ def index(query=''):
     #     print os.path.abspath('pdb.sock')
     #     f = s.makefile()
     #     pdb.Pdb(stdin=f, stdout=f).set_trace()
-    return template('index.html', query=q, req=request.query)
+    return template('index.html', query=q, req=request.query, content=ans)
 
 @dict_app.route('/robots.txt')
 def robots():
@@ -284,7 +290,10 @@ if '__main__' == __name__:
     DEV_APP.mount('/static/', static_app)
 
     __import__('BaseHTTPServer').BaseHTTPRequestHandler.address_string = lambda x:x.client_address[0]
-    from django.utils import autoreload
-    def dev_server():
-        run(application, host='0.0.0.0', port=8002, debug=True)
-    autoreload.main(dev_server)
+
+    DictRecords.create_table(fail_silently=True)
+    # from django.utils import autoreload
+    # def dev_server():
+    #     run(application, host='0.0.0.0', port=8002, debug=True)
+    # autoreload.main(dev_server)
+    run(application, host='0.0.0.0', port=8002, reload=True)

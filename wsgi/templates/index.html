@@ -25,9 +25,9 @@
         </form>
         <div class="">
           <div id="content">
-            {% if req.json %}<pre><code>{{ content }}</code></pre>{% endif %}
+            <!-- {% if req.json %}<pre><code>{{ content }}</code></pre>{% endif %} -->
             <div id="gdictContent">
-
+              <pre>{{ content }}</pre>
             </div>
           </div>
         </div>
@@ -62,7 +62,7 @@
           clearTimeout(ct);
         }
         ct = setTimeout(function(){
-            $.getScript(url + elem.value)
+            // $.getScript(url + elem.value)
             query = elem.value;
           }, 300)
       }
@@ -239,8 +239,6 @@
         }
       }
     --></script>
-    {% if query %}
-    <script id="GDictSrc" src="//www.google.com/dictionary/json?callback=showGDict&sl=zh&tl=en&restrict=pr,sy,de&q={{query}}"></script>
-    {% endif %}
+
   </body>
 </html>
