@@ -24,21 +24,26 @@ dictionary = pystardict.Dictionary(rel_path('def/stardict-dictd-web1913-2.4.2/di
 
 # db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
 
+
+def create_db_conn():
+    return peewee.MySQLDatabase('backend', 
+        host=os.environ.get('OPENSHIFT_MYSQL_DB_HOST', '127.0.0.1'), 
+        port=int(os.environ.get('OPENSHIFT_MYSQL_DB_PORT', '3306')),
+        user='bu',
+        passwd='bupassword@',
+    )
+
+
 class DbConn(object):
     _db_conn = None
-    def create_conn(self):
-        peewee.MySQLDatabase('backend', 
-            host=os.environ.get('OPENSHIFT_MYSQL_DB_HOST', '127.0.0.1'), 
-            port=int(os.environ.get('OPENSHIFT_MYSQL_DB_PORT', '3306')),
-            user='bu',
-            passwd='bupassword@',
-        )
     def __new__(cls, *args, **kwargs):
         if cls._db_conn is None:
-            db = cls.create_conn()
-            db.get_conn().errorhandler = cls.retry_conn
+            db = peewee()
             cls._db_conn = db
         return cls._db_conn
+
+    def __init__(self):
+        self._db_conn.errorhandler = self.retry_conn
             
     # handle connect timeout issues
     # poor-man's connection pool
@@ -51,7 +56,8 @@ class DbConn(object):
             #     # print tb.tb_frame.f_locals.keys()
             # frame = tb.tb_frame
             print 're-conn'
-            self._db_conn = self.get_conn()
+            self._db_conn = create_db_conn()
+            self._db_conn.errorhandler = self.retry_conn
         else:
             print errorclass, errorvalue, type(errorvalue), self.connection.OperationalError
 
