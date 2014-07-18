@@ -38,7 +38,7 @@ class DbConn(object):
     _db_conn = None
     def __new__(cls, *args, **kwargs):
         if cls._db_conn is None:
-            db = peewee()
+            db = create_db_conn()
             cls._db_conn = db
         return cls._db_conn
 
