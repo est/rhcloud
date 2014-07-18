@@ -35,8 +35,8 @@ class DbConn(object):
         )
     def __new__(cls, *args, **kwargs):
         if cls._db_conn is None:
-            db = self.create_conn()
-            db.get_conn().errorhandler = self.retry_conn
+            db = cls.create_conn()
+            db.get_conn().errorhandler = cls.retry_conn
             cls._db_conn = db
         return cls._db_conn
             
