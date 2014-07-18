@@ -22,30 +22,39 @@ STATIC_ROOT = rel_path('static')
 
 dictionary = pystardict.Dictionary(rel_path('def/stardict-dictd-web1913-2.4.2/dictd_www.dict.org_web1913'))
 
-db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
-# db = peewee.MySQLDatabase('backend', 
-#     host=os.environ.get('OPENSHIFT_MYSQL_DB_HOST', '127.0.0.1'), 
-#     port=int(os.environ.get('OPENSHIFT_MYSQL_DB_PORT', '3306')),
-#     user='bu',
-#     passwd='bupassword@',
-#     )
+# db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
 
-# handle connect timeout issues
-# poor-man's connection pool
-def retry_conn(self, errorclass, errorvalue):
-    if isinstance(errorvalue, self.connection.OperationalError): 
-        # and errorvalue[0]==2006:
-        # exc, value, tb = sys.exc_info()
-        # while tb.tb_next:
-        #     tb = tb.tb_next
-        #     # print tb.tb_frame.f_locals.keys()
-        # frame = tb.tb_frame
-        print 're-conn', db.connect()
-    else:
-        print errorclass, errorvalue, type(errorvalue), self.connection.OperationalError
+class DbConn(object):
+    _db_conn = None
+    def create_conn(self):
+        peewee.MySQLDatabase('backend', 
+            host=os.environ.get('OPENSHIFT_MYSQL_DB_HOST', '127.0.0.1'), 
+            port=int(os.environ.get('OPENSHIFT_MYSQL_DB_PORT', '3306')),
+            user='bu',
+            passwd='bupassword@',
+        )
+    def __new__(cls, *args, **kwargs):
+        if cls._db_conn is None:
+            db = self.create_conn()
+            db.get_conn().errorhandler = self.retry_conn
+            cls._db_conn = db
+        return cls._db_conn
+            
+    # handle connect timeout issues
+    # poor-man's connection pool
+    def retry_conn(self, errorclass, errorvalue):
+        if isinstance(errorvalue, self.connection.OperationalError): 
+            # and errorvalue[0]==2006:
+            # exc, value, tb = sys.exc_info()
+            # while tb.tb_next:
+            #     tb = tb.tb_next
+            #     # print tb.tb_frame.f_locals.keys()
+            # frame = tb.tb_frame
+            print 're-conn'
+            self._db_conn = self.get_conn()
+        else:
+            print errorclass, errorvalue, type(errorvalue), self.connection.OperationalError
 
-
-# db.get_conn().errorhandler = retry_conn
 
 def remote_addr(req):
     proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')]
