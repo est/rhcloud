@@ -102,7 +102,7 @@ class DictRecords(peewee.Model):
     date = peewee.DateTimeField(formats=['%Y-%m-%d %H:%M:%S'], index=True)
 
     class Meta:
-        database = db
+        database = DbConn()
 
 @dict_app.route(r'/\:history')
 def history():
@@ -188,7 +188,7 @@ class RequestRecord(peewee.Model):
     date = peewee.DateTimeField(formats=['%Y-%m-%d %H:%M:%S'], index=True)
 
     class Meta:
-        database = db
+        database = DbConn()
 
 
 @tools_app.route('/ip<ext:re:\.?\w*>')
