@@ -42,7 +42,7 @@ class DbConn(object):
         return cls._db_conn
 
     def __init__(self):
-        self._db_conn.errorhandler = self.retry_conn
+        self._db_conn.get_conn().errorhandler = self.retry_conn
             
     # handle connect timeout issues
     # poor-man's connection pool
@@ -56,7 +56,7 @@ class DbConn(object):
             # frame = tb.tb_frame
             print 're-conn'
             self._db_conn = create_db_conn()
-            self._db_conn.errorhandler = self.retry_conn
+            self._db_conn.get_conn().errorhandler = self.retry_conn
         else:
             print errorclass, errorvalue, type(errorvalue), self.connection.OperationalError
 
