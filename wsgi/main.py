@@ -28,25 +28,36 @@ dictionary = pystardict.Dictionary(rel_path('def/stardict-dictd-web1913-2.4.2/di
 
 class SafeMySQLDatabase(peewee.MySQLDatabase):
     err_retry = 5
+    last_retry = time.time()
     def sql_error_handler(self, exception, sql, params, require_commit):
         print 'fucking shit', id(self), self.err_retry, type(exception), isinstance(exception, peewee.mysql.OperationalError), exception[0]
         if isinstance(exception, peewee.mysql.OperationalError): # and exception[0]==2003:
             self.err_retry -= 1
             self.close()
             self.get_conn()
-            while err_retry>0:
-                print 'shit'
+            now = time.time()
+            if err_retry>0:
+                # print 'shit'
                 self.execute_sql(sql, params)
+            if now - self.last_retry>60:
+                self.last_retry = time.time()
+                self.err_retry = 5
             return False
         return True
 
-def DbConn():
-    return SafeMySQLDatabase('backend', 
-        host=os.environ.get('OPENSHIFT_MYSQL_DB_HOST', '127.0.0.1'), 
-        port=int(os.environ.get('OPENSHIFT_MYSQL_DB_PORT', '3306')),
-        user='bu',
-        passwd='bupassword@',
-    )
+
+class DbConn(object):
+    _db_conn = None
+    def __new__(cls, *args, **kwargs):
+        if cls._db_conn is None:
+            cls._db_conn = SafeMySQLDatabase('backend', 
+                host=os.environ.get('OPENSHIFT_MYSQL_DB_HOST', '127.0.0.1'), 
+                port=int(os.environ.get('OPENSHIFT_MYSQL_DB_PORT', '3306')),
+                user='bu',
+                passwd='bupassword@',
+            )
+        return cls._db_conn
+
 
 def remote_addr(req):
     proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')]
