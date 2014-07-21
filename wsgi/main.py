@@ -25,41 +25,28 @@ dictionary = pystardict.Dictionary(rel_path('def/stardict-dictd-web1913-2.4.2/di
 # db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
 
 
-def create_db_conn():
-    return peewee.MySQLDatabase('backend', 
+
+class SafeMySQLDatabase(peewee.MySQLDatabase):
+    err_retry = 5
+    def sql_error_handler(self, exception, sql, params, require_commit):
+        print 'fucking shit', id(self), self.err_retry, type(exception), isinstance(exception, peewee.mysql.OperationalError), exception[0]
+        if isinstance(exception, peewee.mysql.OperationalError): # and exception[0]==2003:
+            self.err_retry -= 1
+            self.close()
+            self.get_conn()
+            while err_retry>0:
+                print 'shit'
+                self.execute_sql(sql, params)
+            return False
+        return True
+
+def DbConn():
+    return SafeMySQLDatabase('backend', 
         host=os.environ.get('OPENSHIFT_MYSQL_DB_HOST', '127.0.0.1'), 
         port=int(os.environ.get('OPENSHIFT_MYSQL_DB_PORT', '3306')),
         user='bu',
         passwd='bupassword@',
     )
-
-
-class DbConn(object):
-    _db_conn = None
-    def __new__(cls, *args, **kwargs):
-        if cls._db_conn is None:
-            cls._db_conn = create_db_conn()
-        return cls._db_conn
-
-    def __init__(self):
-        self._db_conn.get_conn().errorhandler = self.retry_conn
-            
-    # handle connect timeout issues
-    # poor-man's connection pool
-    def retry_conn(self, errorclass, errorvalue):
-        if isinstance(errorvalue, self.connection.OperationalError): 
-            # and errorvalue[0]==2006:
-            # exc, value, tb = sys.exc_info()
-            # while tb.tb_next:
-            #     tb = tb.tb_next
-            #     # print tb.tb_frame.f_locals.keys()
-            # frame = tb.tb_frame
-            print 're-conn'
-            self._db_conn = create_db_conn()
-            self._db_conn.get_conn().errorhandler = self.retry_conn
-        else:
-            print errorclass, errorvalue, type(errorvalue), self.connection.OperationalError
-
 
 def remote_addr(req):
     proxy = [x.strip() for x in req.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')]
