@@ -5,6 +5,7 @@
 # http://code.google.com/p/babiloo/wiki/StarDict_format
 
 import struct, gzip
+import mmap
 import glob, os
 
 class StarDict(object):
@@ -15,7 +16,10 @@ class StarDict(object):
 
         self.dic_filename = glob.glob(dir_prefix+'.dict*')[0]
         if self.dic_filename.endswith('.dz'):
-            self.dic_file = gzip.open(self.dic_filename, 'rb')
+            f = open(self.dic_filename, 'rb')
+            mapped = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+            self.dic_file = gzip.GzipFile(mode="r", fileobj=mapped)
+
         else:
             self.dic_file = open(self.dic_filename, 'rb')
 
@@ -35,7 +39,7 @@ class StarDict(object):
             if i>= l:
                 break
 
-    def get_def(self, word=''):
+    def lookup(self, word=''):
         r = self.word_index.get(word, None)
         if r:
             self.dic_file.seek(r[0])
@@ -45,3 +49,4 @@ class StarDict(object):
 
 if '__main__' == __name__:
     d = StarDict('def/stardict-dictd-web1913-2.4.2/dictd_www.dict.org_web1913')
+    print d.lookup('Test')
