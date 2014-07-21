@@ -36,7 +36,11 @@ class StarDict(object):
                 break
 
     def get_def(self, word=''):
-        pass
+        r = self.word_index.get(word, None)
+        if r:
+            self.dic_file.seek(r[0])
+            return self.dic_file.read(r[1])
+        return ''
 
 
 if '__main__' == __name__:
