@@ -16,9 +16,8 @@ class StarDict(object):
         self.idx_filename = glob.glob(dir_prefix+'.idx')[0]
         self.parse_idx_file(self.idx_filename)
 
-        self.dic_filename = glob.glob(dir_prefix+'.dict*')[0]
-        self.dic_file = dictzip.DictzipFile(self.dic_filename)
 
+        self.dic_filename = glob.glob(dir_prefix+'.dict*')[0]
         # f = open(self.dic_filename, 'rb')
         # mapped = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         # self.dic_file = gzip.GzipFile(mode="r", fileobj=mapped)
@@ -41,10 +40,14 @@ class StarDict(object):
                 break
 
     def lookup(self, word=''):
+
+        self.dic_file = dictzip.DictzipFile(self.dic_filename)
+
         r = self.word_index.get(word, None)
         if r:
             self.dic_file.seek(r[0])
             return self.dic_file.read(r[1])
+        self.dic_file.close()
         return ''
 
 

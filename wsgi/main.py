@@ -15,12 +15,14 @@ from bottle import (route, run, default_app,
     Bottle, static_file, 
     jinja2_template as template, html_escape)
 
+import est_stardict
+
 rel_path = lambda x: os.path.join(os.path.realpath(os.path.dirname(__file__)), x)
 
 bottle.TEMPLATE_PATH.append(rel_path('templates'))
 STATIC_ROOT = rel_path('static')
 
-dictionary = pystardict.Dictionary(rel_path('def/stardict-dictd-web1913-2.4.2/dictd_www.dict.org_web1913'))
+dictionary = est_stardict.StarDict(rel_path('def/stardict-dictd-web1913-2.4.2/dictd_www.dict.org_web1913'))
 
 # db = peewee.SqliteDatabase(rel_path('db.sqlite3'))
 
@@ -122,7 +124,7 @@ def index(query=''):
     q = query.decode('utf8', 'replace')
 
     try:
-        ans = dictionary.dict[q.title()]
+        ans = dictionary.lookup[q.title()]
     except KeyError:
         response.status = 404
         return template('index.html', query=q, req=request.query)
