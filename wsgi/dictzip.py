@@ -1,34 +1,8 @@
 #!/usr/bin/python
 # -*- coding:UTF-8 -*-
-'''
-Copyright 2009 http://code.google.com/p/pytoolkits/. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-  * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-  * Redistributions in binary form must reproduce the above
-    copyright notice, this list of conditions and the following
-    disclaimer in the documentation and/or other materials provided
-    with the distribution.
-  * Neither the name of http://code.google.com/p/pytoolkits/ nor the names of its
-    contributors may be used to endorse or promote products derived
-    from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-'''
 """
+# http://code.google.com/p/pytoolkits/source/browse/trunk/utils/stardict/dictzip.py
 Functions that provide transparent read-only access to dictzipped files
 """
 
@@ -52,7 +26,7 @@ def read32(input):
 def open(filename, mode="rb", compresslevel=9):
     return DictzipFile(filename, mode, compresslevel)
 
-class DictzipFile:
+class DictzipFile(object):
     """
     """
     myfileobj = None
@@ -106,7 +80,7 @@ class DictzipFile:
             while 1:
                 l = ord(extra[2])+256*ord(extra[3])
                 e = extra[:4+l]
-                if e[:2]<>'RA':
+                if e[:2] != 'RA':
                     extra=extra[4+l:]
                     if not extra:
                         raise "Missing dictzip extension"
@@ -272,4 +246,4 @@ class DictzipFile:
                 print self._firstpos
                 
 if __name__ == '__main__':
-        pass
+    d = DictzipFile('def/stardict-dictd-web1913-2.4.2/dictd_www.dict.org_web1913.dict.dz')

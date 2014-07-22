@@ -8,6 +8,8 @@ import struct, gzip
 import mmap
 import glob, os
 
+import dictzip
+
 class StarDict(object):
     def __init__(self, dir_prefix=''):
         self.word_index = {}
@@ -15,13 +17,12 @@ class StarDict(object):
         self.parse_idx_file(self.idx_filename)
 
         self.dic_filename = glob.glob(dir_prefix+'.dict*')[0]
-        if self.dic_filename.endswith('.dz'):
-            f = open(self.dic_filename, 'rb')
-            mapped = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-            self.dic_file = gzip.GzipFile(mode="r", fileobj=mapped)
+        self.dic_file = dictzip.DictzipFile(self.dic_filename)
 
-        else:
-            self.dic_file = open(self.dic_filename, 'rb')
+        # f = open(self.dic_filename, 'rb')
+        # mapped = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        # self.dic_file = gzip.GzipFile(mode="r", fileobj=mapped)
+
 
     def parse_idx_file(self, filename):
         l = os.stat(filename).st_size
