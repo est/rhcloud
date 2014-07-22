@@ -124,7 +124,7 @@ def index(query=''):
     q = query.decode('utf8', 'replace')
 
     try:
-        ans = dictionary.lookup[q.title()]
+        ans = dictionary.lookup(q.title())
     except KeyError:
         response.status = 404
         return template('index.html', query=q, req=request.query)
